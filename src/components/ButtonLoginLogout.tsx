@@ -1,12 +1,15 @@
 import { CiLogin, CiLogout } from 'react-icons/ci';
+import { useNavigate } from 'react-router-dom';
 
 export default function ButtonLoginLogout() {
-    const isLogged = false;
+    const navigate = useNavigate();
+    const isLogged = true;
 
     return (
         <div>
             {isLogged ? (
                 <button
+                    onClick={() => navigate('/register')}
                     className='py-2 w-[7vw] rounded-lg bg-green-500 
                 flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-200'
                 >
@@ -15,6 +18,7 @@ export default function ButtonLoginLogout() {
                 </button>
             ) : (
                 <button
+                    onClick={() => navigate('/login')}
                     className='py-2 w-[7vw] rounded-lg dark:border-blue-500 bg-blue-500
                     flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-200'
                 >
