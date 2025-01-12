@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 
 export default function ButtonLoginLogout() {
     const navigate = useNavigate();
-    const isLogged = true;
+    const isLogged = false;
 
     return (
         <div>
             {isLogged ? (
                 <button
-                    onClick={() => navigate('/register')}
                     className='py-2 w-[7vw] rounded-lg bg-green-500 
                 flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-200'
                 >
