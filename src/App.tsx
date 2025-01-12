@@ -9,6 +9,7 @@ import {
 } from './pages/exportPages';
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PrivateRoute from './components/PrivateRoute';
 
 export default function App() {
     return (
@@ -21,6 +22,7 @@ export default function App() {
                     <Route path='/verify-email' element={<VerifyEmail />} />
                     <Route path='/forgot-password' element={<ForgotPassword />} />
                     <Route path='/reset-password' element={<ResetPassword />} />
+                    {/* <Route element={<PrivateRoute />}></Route> */}
                 </Routes>
             </Router>
 
