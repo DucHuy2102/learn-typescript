@@ -1,8 +1,10 @@
 import { FormEventHandler, useState } from 'react';
 import { FaHome, FaSpinner } from 'react-icons/fa';
 import { IoIosSend } from 'react-icons/io';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { userLogin } from '../../redux/slices/userSlice';
 
 interface LoginProps {
     username: string;
@@ -10,6 +12,7 @@ interface LoginProps {
 }
 
 export default function Login() {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const [login, setLogin] = useState<LoginProps>({
         username: '',
@@ -24,6 +27,16 @@ export default function Login() {
         try {
             setLoading(true);
             console.log(login);
+            // call api login here and dispatch userLogin action
+            const token = 123456;
+            const userInfo = {
+                name: 'John Doe',
+                email: 'jd@gmail.com',
+                avatar: 'https://via.placeholder.com/150',
+                address: 'New York, USA',
+                occupation: 'Web Developer',
+            };
+            dispatch(userLogin({ token, userInfo }));
         } catch (error) {
             console.log('Login error', error);
         } finally {
