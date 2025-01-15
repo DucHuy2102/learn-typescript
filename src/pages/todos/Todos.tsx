@@ -13,16 +13,19 @@ interface Task {
     id: string;
     content: string;
     isCompleted: boolean;
+    createdAt?: string;
 }
 
 export default function Todos() {
     const navigate = useNavigate();
+    const { theme } = useSelector((state: RootState) => state.theme);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [inputTask, setInputTask] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState<{ [key: number]: boolean }>({});
     const { token } = useSelector((state: RootState) => state.user);
+    // const token = true;
 
     // toggle expand content task
     const toggleExpand = (index: number) => {
@@ -45,6 +48,7 @@ export default function Todos() {
                 id: Date.now().toString(),
                 content: inputTask,
                 isCompleted: false,
+                createdAt: new Date().toISOString(),
             };
             setTasks([...tasks, newTask]);
             toast('Add new task successfully!');
@@ -52,7 +56,7 @@ export default function Todos() {
             // edit task
             const newTasks = tasks.map((task) => {
                 if (task.id === editingTaskId) {
-                    return { ...task, content: inputTask };
+                    return { ...task, content: inputTask, createdAt: new Date().toISOString() };
                 }
                 return task;
             });
@@ -62,6 +66,42 @@ export default function Todos() {
             toast('Edit task successfully!');
         }
         setInputTask('');
+    };
+
+    // Thêm hàm format thời gian ở đầu component
+    const formatTime = (dateString: string) => {
+        const date = new Date(dateString);
+        const today = new Date();
+
+        // Nếu là task tạo trong ngày hôm nay
+        if (date.toDateString() === today.toDateString()) {
+            return `Today at ${date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            })}`;
+        }
+
+        // Nếu là task tạo trong ngày hôm qua
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        if (date.toDateString() === yesterday.toDateString()) {
+            return `Yesterday at ${date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            })}`;
+        }
+
+        // Các task cũ hơn
+        return date.toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        });
     };
 
     // handle edit task by id
@@ -78,6 +118,15 @@ export default function Todos() {
         if (!taskId) return;
         setTasks(tasks.filter((task) => task.id !== taskId));
         toast('Delete task successfully!');
+    };
+
+    // handle check done task by id
+    const handleCheckdoneTask = (taskId: string) => {
+        setTasks((prev) =>
+            prev.map((task) =>
+                task.id === taskId ? { ...task, isCompleted: !task.isCompleted } : task
+            )
+        );
     };
 
     return (
@@ -125,38 +174,61 @@ export default function Todos() {
                         {tasks.map((task, index) => (
                             <li
                                 key={task.id}
-                                className='flex justify-between items-center bg-gray-100 px-5 py-3 rounded-lg'
+                                className={`flex justify-between items-center cursor-pointer px-5 py-3 rounded-lg
+                            ${
+                                task.isCompleted
+                                    ? 'bg-blue-500/20 dark:bg-blue-500/30'
+                                    : 'bg-gray-100 dark:bg-gray-300/50'
+                            }
+                            transition-colors duration-200 border-none`}
                             >
                                 {/* content */}
-                                <div className='flex flex-1 overflow-hidden items-center space-x-2 min-w-0'>
-                                    {/* checkbox */}
-                                    <input type='checkbox' id={task.id} />
-
-                                    {/* content task */}
-                                    <div
-                                        className={`flex flex-col flex-1 transition-all duration-300 ease-in-out ${
-                                            !isExpanded[index] ? 'max-w-[20vw]' : 'max-w-full'
-                                        }`}
-                                    >
+                                <div className='flex flex-col flex-1 overflow-hidden min-w-0 space-y-1'>
+                                    <div className='flex items-center space-x-2'>
+                                        <input
+                                            type='checkbox'
+                                            id={task.id}
+                                            checked={task.isCompleted}
+                                            onChange={() => handleCheckdoneTask(task.id)}
+                                            className='w-4 h-4 cursor-pointer accent-blue-500'
+                                        />
                                         <label
                                             htmlFor={task.id}
-                                            className={`text-lg text-gray-700 font-serif leading-normal break-words
+                                            className={`text-lg font-serif leading-normal break-words
+                                            ${
+                                                task.isCompleted
+                                                    ? 'line-through text-blue-600 dark:text-blue-400'
+                                                    : 'text-gray-700 dark:text-gray-800'
+                                            }
                                             ${
                                                 isExpanded[index]
                                                     ? 'whitespace-pre-wrap'
                                                     : 'truncate'
-                                            }`}
+                                            }
+                                            transition-all duration-200`}
                                         >
                                             {task.content}
                                         </label>
                                     </div>
+
+                                    {/* Thời gian */}
+                                    <span
+                                        className={`text-xs ml-6 italic ${
+                                            theme === 'light' ? 'text-gray-500' : 'text-gray-300'
+                                        } `}
+                                    >
+                                        {task.createdAt && formatTime(task.createdAt)}
+                                        {task.isCompleted && ' • Completed'}
+                                    </span>
                                 </div>
 
                                 {/* buttons */}
                                 <div className='flex items-center justify-center space-x-2'>
                                     {/* button expand content */}
                                     <button
-                                        className='text-blue-500 hover:underline hover:scale-125 transition duration-150'
+                                        className={`
+                                            ${theme === 'light' ? 'text-blue-500' : 'text-gray-300'}
+                                            hover:underline hover:scale-125 transition duration-150`}
                                         onClick={() => toggleExpand(index)}
                                     >
                                         {isExpanded[index] ? (
@@ -169,7 +241,9 @@ export default function Todos() {
                                     {/* button edit content */}
                                     <button
                                         onClick={() => handleEditTask(task.id)}
-                                        className='text-blue-500 hover:scale-125 transition duration-150'
+                                        className={`${
+                                            theme === 'light' ? 'text-blue-500' : 'text-gray-300'
+                                        } hover:scale-125 transition duration-150 font-semibold`}
                                     >
                                         <CiEdit />
                                     </button>
